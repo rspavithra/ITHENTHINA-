@@ -1123,6 +1123,36 @@ export default function SoloMode({ onBack, onOpenHall }) {
             overflowY: "auto",
           }}
         >
+          {/* Close button — fixed to viewport top-right, never scrolls away */}
+          <button
+            onClick={() => setShowModal(false)}
+            aria-label="Close"
+            style={{
+              position: "fixed",
+              top: 20,
+              right: 24,
+              zIndex: 2000,
+              width: 42,
+              height: 42,
+              borderRadius: "50%",
+              border: `3px solid ${COLORS.ink}`,
+              background: COLORS.white,
+              color: COLORS.ink,
+              fontWeight: 900,
+              fontSize: 22,
+              cursor: "pointer",
+              boxShadow: `3px 3px 0 ${COLORS.ink}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "transform 0.12s ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          >
+            ×
+          </button>
+
           <div
             style={{
               background: "#FFFDF9",
@@ -1139,33 +1169,6 @@ export default function SoloMode({ onBack, onOpenHall }) {
               animation: "modalPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
             }}
           >
-            {/* Close Button at top right */}
-            <button
-              onClick={() => setShowModal(false)}
-              style={{
-                position: "absolute",
-                top: 20,
-                right: 20,
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                border: `3px solid ${COLORS.ink}`,
-                background: COLORS.white,
-                color: COLORS.ink,
-                fontWeight: 900,
-                fontSize: 22,
-                cursor: "pointer",
-                boxShadow: `3px 3px 0 ${COLORS.ink}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "transform 0.12s ease",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-            >
-              ×
-            </button>
 
             {/* 1. INVENTION HERO */}
             <div style={{ textAlign: "center", marginBottom: 28, borderBottom: `3px dashed ${COLORS.ink}`, paddingBottom: 28 }}>

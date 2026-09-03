@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import IthenthinaLanding from '../IthenthinaLanding.jsx';
 import SoloMode from './SoloMode.jsx';
-import HallModal from './HallModal.jsx';
+import HallPage from './HallPage.jsx';
 
 function App() {
-  const [currentView, setCurrentView] = useState('home'); // 'home' | 'solo'
-  const [isHallOpen, setIsHallOpen] = useState(false);
+  // 'home' | 'solo' | 'hall'
+  const [currentView, setCurrentView] = useState('home');
+
+  const goHome = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setCurrentView('home');
+  };
 
   return (
     <>
@@ -15,25 +20,20 @@ function App() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setCurrentView('solo');
           }}
-          onOpenHall={() => setIsHallOpen(true)}
+          onOpenHall={() => setCurrentView('hall')}
         />
       )}
 
       {currentView === 'solo' && (
         <SoloMode
-          onBack={() => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            setCurrentView('home');
-          }}
-          onOpenHall={() => setIsHallOpen(true)}
+          onBack={goHome}
+          onOpenHall={() => setCurrentView('hall')}
         />
       )}
 
-      {/* Hall of Uselessness Modal Accessible Everywhere */}
-      <HallModal
-        isOpen={isHallOpen}
-        onClose={() => setIsHallOpen(false)}
-      />
+      {currentView === 'hall' && (
+        <HallPage onBack={goHome} />
+      )}
     </>
   );
 }

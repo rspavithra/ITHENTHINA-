@@ -93,26 +93,82 @@ export default function HallModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: "50%",
-              border: `2.5px solid ${COLORS.ink}`,
-              background: COLORS.white,
-              color: COLORS.ink,
-              fontWeight: 900,
-              fontSize: 20,
-              cursor: "pointer",
-              boxShadow: `2px 2px 0 ${COLORS.ink}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            ×
-          </button>
+          {/* Profile Icon with Dropdown */}
+          <div style={{ position: "relative", display: "flex", gap: 8 }}>
+            <button
+              onClick={() => setProfileOpen((prev) => !prev)}
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: "50%",
+                border: `2.5px solid ${COLORS.ink}`,
+                background: COLORS.white,
+                cursor: "pointer",
+                boxShadow: `2px 2px 0 ${COLORS.ink}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              👤
+            </button>
+            {profileOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "120%",
+                  right: 0,
+                  background: COLORS.white,
+                  border: `2px solid ${COLORS.ink}`,
+                  borderRadius: 12,
+                  padding: "8px 12px",
+                  boxShadow: `3px 3px 0 ${COLORS.ink}`,
+                  zIndex: 10,
+                  minWidth: 140,
+                }}
+              >
+                <div style={{ fontWeight: 800, marginBottom: 4 }}>User Name</div>
+                <button
+                  onClick={() => {
+                    localStorage.clear();
+                    onClose();
+                  }}
+                  style={{
+                    background: COLORS.mustard,
+                    border: `2px solid ${COLORS.ink}`,
+                    borderRadius: 8,
+                    padding: "4px 8px",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                  }}
+                >
+                  Log Out
+                </button>
+              </div>
+            )}
+
+            {/* Close Cross */}
+            <button
+              onClick={onClose}
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: "50%",
+                border: `2.5px solid ${COLORS.ink}`,
+                background: COLORS.white,
+                color: COLORS.ink,
+                fontWeight: 900,
+                fontSize: 24,
+                cursor: "pointer",
+                boxShadow: `2px 2px 0 ${COLORS.ink}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {/* Content List */}
