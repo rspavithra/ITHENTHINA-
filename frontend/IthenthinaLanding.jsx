@@ -759,7 +759,7 @@ export default function IthenthinaLanding({ onStartSolo, onOpenHall, onOpenLogin
               zIndex: 2,
             }}
           >
-            30 seconds of shame, guaranteed
+            100% unnecessary. 0% regrets.
           </div>
 
           <h1

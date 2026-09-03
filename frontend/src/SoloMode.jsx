@@ -505,7 +505,12 @@ export default function SoloMode({ onBack, onOpenHall }) {
               boxShadow: `3px 3px 0 ${COLORS.ink}`,
             }}
           >
-            <span>⚠</span> Choose how you'd like to disappoint humanity today.
+            <span>⚠</span>{" "}
+            {activeOption === "preset"
+              ? "Pick 2–3 things that have absolutely no business being together."
+              : activeOption === "custom"
+              ? "Add 2–3 objects from your questionable imagination."
+              : "Choose how you'd like to disappoint humanity today."}
           </div>
         </div>
 
