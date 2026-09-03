@@ -424,30 +424,32 @@ export default function SoloMode({ onBack, onOpenHall }) {
           </div>
         </div>
 
-        <button
-          onClick={onOpenHall}
-          style={{
-            fontFamily: "'Space Grotesk', sans-serif",
-            fontWeight: 700,
-            fontSize: 14,
-            border: `3px solid ${COLORS.ink}`,
-            background: COLORS.mustard,
-            padding: "11px 20px",
-            borderRadius: 40,
-            cursor: "pointer",
-            boxShadow: `4px 4px 0 ${COLORS.ink}`,
-            color: COLORS.ink,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth="2.4">
-            <path d="M4 21V9l8-6 8 6v12" />
-            <path d="M9 21v-7h6v7" />
-          </svg>
-          Hall of Uselessness
-        </button>
+        {Boolean(typeof window !== 'undefined' && localStorage.getItem('ithenthina_token')) && (
+          <button
+            onClick={onOpenHall}
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontWeight: 700,
+              fontSize: 14,
+              border: `3px solid ${COLORS.ink}`,
+              background: COLORS.mustard,
+              padding: "11px 20px",
+              borderRadius: 40,
+              cursor: "pointer",
+              boxShadow: `4px 4px 0 ${COLORS.ink}`,
+              color: COLORS.ink,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth="2.4">
+              <path d="M4 21V9l8-6 8 6v12" />
+              <path d="M9 21v-7h6v7" />
+            </svg>
+            Hall of Uselessness
+          </button>
+        )}
       </nav>
 
       {/* MAIN CONTAINER */}

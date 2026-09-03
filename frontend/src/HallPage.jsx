@@ -12,12 +12,19 @@ const COLORS = {
   darkGray: "#4b443c",
 };
 
-// Dummy user — replace with real auth later
-const USER_NAME = "Inventor";
-
 export default function HallPage({ onBack }) {
   const [inventions, setInventions] = useState([]);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem("ithenthina_user");
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const userName = currentUser?.name || "Inventor";
 
   useEffect(() => {
     try {
@@ -51,6 +58,9 @@ export default function HallPage({ onBack }) {
 
   const handleLogout = () => {
     setProfileOpen(false);
+    localStorage.removeItem("ithenthina_token");
+    localStorage.removeItem("ithenthina_user");
+    setCurrentUser(null);
     localStorage.removeItem("ithenthina_hall_of_uselessness");
     onBack();
   };
@@ -114,33 +124,36 @@ export default function HallPage({ onBack }) {
           </div>
         </div>
 
-        {/* Right: profile icon */}
+        {/* Right: profile icon and name */}
         <div id="profile-btn" style={{ position: "relative" }}>
           <button
             onClick={() => setProfileOpen((p) => !p)}
             title="Profile"
             style={{
-              width: 42,
-              height: 42,
-              borderRadius: "50%",
+              borderRadius: 30,
               border: `3px solid ${COLORS.ink}`,
               background: COLORS.mustard,
               cursor: "pointer",
               boxShadow: `3px 3px 0 ${COLORS.ink}`,
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              fontSize: 20,
+              gap: 8,
+              padding: "7px 16px",
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontWeight: 700,
+              fontSize: 14,
+              color: COLORS.ink,
               transition: "transform 0.12s",
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.transform = "scale(1.08)")
+              (e.currentTarget.style.transform = "scale(1.05)")
             }
             onMouseLeave={(e) =>
               (e.currentTarget.style.transform = "scale(1)")
             }
           >
-            👤
+            <span style={{ fontSize: 18 }}>👤</span>
+            <span>{userName}</span>
           </button>
 
           {/* Dropdown */}
@@ -208,7 +221,7 @@ export default function HallPage({ onBack }) {
                       color: COLORS.ink,
                     }}
                   >
-                    {USER_NAME}
+                    {userName}
                   </div>
                   <div style={{ fontSize: 11, color: "#7a7268", fontWeight: 600 }}>
                     Certified Useless Inventor

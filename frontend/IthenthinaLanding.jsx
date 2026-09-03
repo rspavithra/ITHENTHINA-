@@ -169,7 +169,35 @@ function FeatureChip({ icon, label }) {
   );
 }
 
-export default function IthenthinaLanding({ onStartSolo, onOpenHall }) {
+export default function IthenthinaLanding({ onStartSolo, onOpenHall, onOpenLogin, currentUser: propUser, onLogout }) {
+  const checkLoggedInUser = () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('ithenthina_token') : null;
+      if (!token) return null;
+      if (propUser) return propUser;
+      const stored = localStorage.getItem('ithenthina_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const [user, setUser] = React.useState(checkLoggedInUser);
+  const [profileOpen, setProfileOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    setUser(checkLoggedInUser());
+  }, [propUser]);
+
+  React.useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest("#landing-profile-btn")) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   return (
     <div
       style={{
@@ -503,13 +531,209 @@ export default function IthenthinaLanding({ onStartSolo, onOpenHall }) {
           <div style={{ fontFamily: "'Bungee', cursive", fontSize: 20 }}>
             ITHENTHINA<span style={{ color: COLORS.coral }}>?</span>
           </div>
-          <GhostButton onClick={onOpenHall} style={{ background: COLORS.mustard }}>
-            <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth="2.4">
-              <path d="M4 21V9l8-6 8 6v12" />
-              <path d="M9 21v-7h6v7" />
-            </svg>
-            Hall of Uselessness
-          </GhostButton>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {user && (
+              <GhostButton onClick={onOpenHall} style={{ background: COLORS.mustard }}>
+                <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth="2.4">
+                  <path d="M4 21V9l8-6 8 6v12" />
+                  <path d="M9 21v-7h6v7" />
+                </svg>
+                Hall of Uselessness
+              </GhostButton>
+            )}
+
+            {user ? (
+              <div id="landing-profile-btn" style={{ position: "relative" }}>
+                <GhostButton
+                  onClick={() => setProfileOpen((p) => !p)}
+                  style={{
+                    background: COLORS.white,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" width={17} height={17} fill="none" stroke="currentColor" strokeWidth="2.4">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  <span>{user.name}</span>
+                  <svg
+                    viewBox="0 0 24 24"
+                    width={13}
+                    height={13}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    style={{
+                      transform: profileOpen ? "rotate(180deg)" : "rotate(0deg)",
+                      transition: "transform .15s ease",
+                    }}
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </GhostButton>
+
+                {profileOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 10px)",
+                      right: 0,
+                      background: COLORS.white,
+                      border: `2.5px solid ${COLORS.ink}`,
+                      borderRadius: 16,
+                      padding: "16px 18px",
+                      boxShadow: `5px 5px 0 ${COLORS.ink}`,
+                      minWidth: 220,
+                      zIndex: 100,
+                      textAlign: "left",
+                    }}
+                  >
+                    {/* Top Triangle Arrow */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: -10,
+                        right: 20,
+                        width: 0,
+                        height: 0,
+                        borderLeft: "8px solid transparent",
+                        borderRight: "8px solid transparent",
+                        borderBottom: `10px solid ${COLORS.ink}`,
+                      }}
+                    />
+
+                    {/* User info row */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        marginBottom: 12,
+                        paddingBottom: 10,
+                        borderBottom: `2px dashed ${COLORS.ink}`,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 38,
+                          height: 38,
+                          borderRadius: "50%",
+                          background: COLORS.mustard,
+                          border: `2px solid ${COLORS.ink}`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 18,
+                          flexShrink: 0,
+                        }}
+                      >
+                        👤
+                      </div>
+                      <div style={{ overflow: "hidden" }}>
+                        <div
+                          style={{
+                            fontWeight: 800,
+                            fontSize: 14,
+                            color: COLORS.ink,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {user.name}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: "#7a7268",
+                            fontWeight: 600,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {user.email || "Certified Inventor"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Account page link */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        if (onOpenLogin) onOpenLogin();
+                      }}
+                      style={{
+                        width: "100%",
+                        background: COLORS.cream,
+                        border: `2px solid ${COLORS.ink}`,
+                        borderRadius: 10,
+                        padding: "8px 12px",
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        fontWeight: 700,
+                        fontSize: 12,
+                        color: COLORS.ink,
+                        cursor: "pointer",
+                        marginBottom: 8,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        boxShadow: `2px 2px 0 ${COLORS.ink}`,
+                      }}
+                    >
+                      <span>⚙️</span>
+                      <span>Manage Account</span>
+                    </button>
+
+                    {/* Logout button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        localStorage.removeItem("ithenthina_token");
+                        localStorage.removeItem("ithenthina_user");
+                        setUser(null);
+                        if (onLogout) onLogout();
+                      }}
+                      style={{
+                        width: "100%",
+                        background: COLORS.coral,
+                        border: `2px solid ${COLORS.ink}`,
+                        borderRadius: 10,
+                        padding: "8px 12px",
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        fontWeight: 700,
+                        fontSize: 12,
+                        color: COLORS.white,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                        boxShadow: `2px 2px 0 ${COLORS.ink}`,
+                      }}
+                    >
+                      <span>🚪</span>
+                      <span>Log Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              onOpenLogin && (
+                <GhostButton onClick={onOpenLogin} style={{ background: COLORS.white }}>
+                  <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth="2.4">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  Login
+                </GhostButton>
+              )
+            )}
+          </div>
         </nav>
 
         {/* HERO: 100% clean center column with zero icons in center or under text */}
@@ -634,17 +858,19 @@ export default function IthenthinaLanding({ onStartSolo, onOpenHall }) {
                 </svg>
               }
             />
-            <div onClick={onOpenHall} style={{ cursor: "pointer" }}>
-              <FeatureChip
-                label="Hall of Uselessness"
-                icon={
-                  <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke={COLORS.ink} strokeWidth="2.4">
-                    <path d="M4 21V9l8-6 8 6v12" />
-                    <path d="M9 21v-7h6v7" />
-                  </svg>
-                }
-              />
-            </div>
+            {user && (
+              <div onClick={onOpenHall} style={{ cursor: "pointer" }}>
+                <FeatureChip
+                  label="Hall of Uselessness"
+                  icon={
+                    <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke={COLORS.ink} strokeWidth="2.4">
+                      <path d="M4 21V9l8-6 8 6v12" />
+                      <path d="M9 21v-7h6v7" />
+                    </svg>
+                  }
+                />
+              </div>
+            )}
           </div>
         </section>
       </div>
