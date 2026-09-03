@@ -3,9 +3,11 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const itemRoutes = require('./routes/itemRoutes');
+const inventionRoutes = require('./routes/inventionRoutes');
 
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config({ override: true });
 
 // Connect to MongoDB
 connectDB();
@@ -25,8 +27,10 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Authentication routes
+// Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/items', itemRoutes);
+app.use('/api/inventions', inventionRoutes);
 
 // 404 handler for unknown routes
 app.use((req, res) => {
