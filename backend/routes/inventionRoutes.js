@@ -2,6 +2,8 @@ const express = require('express');
 const Groq = require('groq-sdk');
 const { GoogleGenAI } = require('@google/genai');
 const catalogItems = require('../data/items');
+const SavedInvention = require('../models/SavedInvention');
+const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -489,6 +491,144 @@ Use exactly this structure:
     return res.status(500).json({
       success: false,
       message: error.message || 'Error generating invention'
+    });
+  }
+});
+
+// @route   GET /api/inventions
+// @desc    Get all saved inventions for Hall of Uselessness (newest first)
+// @access  Public
+router.get('/', async (req, res) => {
+  try {
+    const savedInventions = await SavedInvention.find()
+      .populate('user', 'name')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Map each document to clean, top-level fields needed by the Hall of Uselessness
+    const inventions = savedInventions.map((item) => ({
+      _id: item._id,
+      name: item.invention?.name || 'Untitled Invention',
+      idea: item.invention?.idea || '',
+      selectedItems: item.selectedItems || [],
+      price: item.invention?.price || '',
+      scores: item.invention?.scores || {},
+      roast: item.invention?.roast || '',
+      problemSolved: item.invention?.problemSolved || '',
+      marketDemand: item.invention?.marketDemand || '',
+      complexity: item.invention?.complexity || '',
+      environment: item.invention?.environment || '',
+      image: item.imageUrl || null,
+      creator: item.user?.name || 'Anonymous Inventor',
+      createdAt: item.createdAt
+    }));
+
+    return res.status(200).json({
+      success: true,
+      count: inventions.length,
+      inventions
+    });
+  } catch (error) {
+    console.error('Hall of Uselessness fetch error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Error fetching Hall of Uselessness inventions'
+    });
+  }
+});
+
+// @route   POST /api/inventions/save
+// @desc    Save an invention to the logged-in user's history
+// @access  Private (Requires Bearer token)
+router.post('/save', protect, async (req, res) => {
+  try {
+    const { selectedItems, invention, imageUrl } = req.body;
+
+    // 1. Validation
+    if (!selectedItems || !Array.isArray(selectedItems) || selectedItems.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide selectedItems as a non-empty array'
+      });
+    }
+
+    if (!invention || typeof invention !== 'object' || !invention.name) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid invention object with at least a name'
+      });
+    }
+
+    // 2. Save to database linked to the authenticated user
+    const savedInvention = await SavedInvention.create({
+      user: req.user._id,
+      selectedItems,
+      invention,
+      imageUrl: imageUrl || null
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Invention saved to history successfully',
+      savedInvention
+    });
+  } catch (error) {
+    console.error('Save invention error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Error saving invention to history'
+    });
+  }
+});
+
+// @route   GET /api/inventions/history
+// @desc    Get all saved inventions for the logged-in user
+// @access  Private (Requires Bearer token)
+router.get('/history', protect, async (req, res) => {
+  try {
+    const history = await SavedInvention.find({ user: req.user._id })
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: history.length,
+      history
+    });
+  } catch (error) {
+    console.error('Fetch history error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Error fetching invention history'
+    });
+  }
+});
+
+// @route   DELETE /api/inventions/history/:id
+// @desc    Delete a saved invention from history
+// @access  Private (Requires Bearer token)
+router.delete('/history/:id', protect, async (req, res) => {
+  try {
+    const saved = await SavedInvention.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user._id
+    });
+
+    if (!saved) {
+      return res.status(404).json({
+        success: false,
+        message: 'Saved invention not found or you are not authorized to delete it'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Invention removed from history successfully'
+    });
+  } catch (error) {
+    console.error('Delete history item error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Error deleting invention from history'
     });
   }
 });
