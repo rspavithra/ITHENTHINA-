@@ -52,12 +52,10 @@ const ROASTS = [
   "Even Kickstarter refused to take a 5% cut from this tragedy.",
 ];
 
-// Helper to generate hilarious invention data based on chosen items
 function generateInventionData(selectedItems) {
   const names = selectedItems.map((s) => s.label);
   const icons = selectedItems.map((s) => s.icon);
 
-  // Generate a name by mashing words
   const cleanNames = names.map((n) => n.toUpperCase().replace(/\s+/g, ""));
   let mainName = "";
   if (cleanNames.length >= 2) {
@@ -85,10 +83,10 @@ function generateInventionData(selectedItems) {
     `Guarantees that whatever task you were originally trying to do will take 500% longer and cost 10x more energy.`,
   ];
 
-  const uselessScore = Math.floor(Math.random() * 6) + 94; // 94 - 99
-  const creativityScore = Math.floor(Math.random() * 15) + 82; // 82 - 97
-  const ridiculousScore = Math.floor(Math.random() * 8) + 92; // 92 - 99
-  const wasteScore = Math.floor(Math.random() * 5) + 95; // 95 - 99
+  const uselessScore = Math.floor(Math.random() * 6) + 94;
+  const creativityScore = Math.floor(Math.random() * 15) + 82;
+  const ridiculousScore = Math.floor(Math.random() * 8) + 92;
+  const wasteScore = Math.floor(Math.random() * 5) + 95;
   const overallScore = Math.round((uselessScore + ridiculousScore + wasteScore) / 3);
 
   const roast = ROASTS[Math.floor(Math.random() * ROASTS.length)];
@@ -118,7 +116,94 @@ function generateInventionData(selectedItems) {
   };
 }
 
+function OptionCard({ tag, icon, title, desc, cta, onClick, accent }) {
+  const [hover, setHover] = useState(false);
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        width: 380,
+        maxWidth: "100%",
+        background: COLORS.white,
+        border: `3.5px solid ${COLORS.ink}`,
+        borderRadius: 24,
+        padding: "32px 28px",
+        textAlign: "left",
+        cursor: "pointer",
+        boxShadow: hover ? `11px 11px 0 ${COLORS.ink}` : `7px 7px 0 ${COLORS.ink}`,
+        transform: hover ? "translate(-3px,-3px)" : "translate(0,0)",
+        transition: "transform .15s ease, box-shadow .15s ease",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              border: `3px solid ${COLORS.ink}`,
+              borderRadius: 14,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 26,
+              background: accent,
+            }}
+          >
+            {icon}
+          </div>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: 1,
+              background: COLORS.lightGray,
+              border: `2px solid ${COLORS.ink}`,
+              borderRadius: 20,
+              padding: "4px 10px",
+              color: COLORS.ink,
+            }}
+          >
+            {tag}
+          </span>
+        </div>
+
+        <div style={{ fontFamily: "'Bungee', cursive", fontSize: 20, marginBottom: 8, color: COLORS.ink }}>
+          {title}
+        </div>
+
+        <p style={{ fontSize: 14, color: "#4b443c", lineHeight: 1.5, fontWeight: 500, margin: 0 }}>
+          {desc}
+        </p>
+      </div>
+
+      <div
+        style={{
+          marginTop: 24,
+          fontWeight: 700,
+          fontSize: 14,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          color: accent === COLORS.mustard ? "#B45309" : "#7C3AED",
+        }}
+      >
+        {cta} <span style={{ fontSize: 16 }}>&rarr;</span>
+      </div>
+    </div>
+  );
+}
+
 export default function SoloMode({ onBack, onOpenHall }) {
+  // Option state: null (initial 2 cards) | 'preset' | 'custom'
+  const [activeOption, setActiveOption] = useState(null);
+
   const [selectedIds, setSelectedIds] = useState([]);
   const [customObjects, setCustomObjects] = useState([]);
   const [customInput, setCustomInput] = useState("");
@@ -133,7 +218,6 @@ export default function SoloMode({ onBack, onOpenHall }) {
   const [generatedResult, setGeneratedResult] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
 
-  // Ref to cancel loading timer
   const loadingTimerRef = useRef(null);
   const messageIntervalRef = useRef(null);
 
@@ -145,12 +229,10 @@ export default function SoloMode({ onBack, onOpenHall }) {
         setLoadingMsgIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
       }, 1800);
 
-      // Finish loading after 5.6s
       loadingTimerRef.current = setTimeout(() => {
         setIsLoading(false);
         if (messageIntervalRef.current) clearInterval(messageIntervalRef.current);
 
-        // Build selected items list
         const allItems = [
           ...PRESET_OBJECTS.filter((o) => selectedIds.includes(o.id)),
           ...customObjects.filter((o) => selectedIds.includes(o.id)),
@@ -171,7 +253,6 @@ export default function SoloMode({ onBack, onOpenHall }) {
     };
   }, [isLoading]);
 
-  // Hide toast after 3.5s
   useEffect(() => {
     if (toastMessage) {
       const t = setTimeout(() => setToastMessage(""), 3500);
@@ -183,8 +264,8 @@ export default function SoloMode({ onBack, onOpenHall }) {
     if (selectedIds.includes(id)) {
       setSelectedIds(selectedIds.filter((item) => item !== id));
     } else {
-      if (selectedIds.length >= 5) {
-        setInputError("Maximum 5 objects allowed! Choose your junk wisely.");
+      if (selectedIds.length >= 3) {
+        setInputError("Maximum 3 objects allowed! Choose your junk wisely.");
         setTimeout(() => setInputError(""), 3000);
         return;
       }
@@ -215,8 +296,7 @@ export default function SoloMode({ onBack, onOpenHall }) {
     setCustomInput("");
     setInputError("");
 
-    // Automatically select if under limit
-    if (selectedIds.length < 5) {
+    if (selectedIds.length < 3) {
       setSelectedIds([...selectedIds, newId]);
     }
   };
@@ -228,7 +308,7 @@ export default function SoloMode({ onBack, onOpenHall }) {
   };
 
   const handleGenerate = () => {
-    if (selectedIds.length < 2) return;
+    if (selectedIds.length < 2 || selectedIds.length > 3) return;
     setIsLoading(true);
   };
 
@@ -251,9 +331,10 @@ export default function SoloMode({ onBack, onOpenHall }) {
     setCustomObjects([]);
     setCustomInput("");
     setGeneratedResult(null);
+    setActiveOption(null); // Return to the two option cards
   };
 
-  const isGenerateDisabled = selectedIds.length < 2 || selectedIds.length > 5;
+  const isGenerateDisabled = selectedIds.length < 2 || selectedIds.length > 3;
 
   return (
     <div
@@ -422,322 +503,472 @@ export default function SoloMode({ onBack, onOpenHall }) {
               boxShadow: `3px 3px 0 ${COLORS.ink}`,
             }}
           >
-            <span>⚠</span> Pick at least 2 objects to begin the experiment.
+            <span>⚠</span> Choose how you'd like to disappoint humanity today.
           </div>
         </div>
 
-        {/* SECTION 1 — CHOOSE YOUR OBJECTS */}
-        <section
-          style={{
-            background: COLORS.white,
-            border: `3.5px solid ${COLORS.ink}`,
-            borderRadius: 24,
-            padding: "32px 28px",
-            boxShadow: `8px 8px 0 ${COLORS.ink}`,
-            marginBottom: 36,
-            textAlign: "center",
-          }}
-        >
+        {/* =========================================================================
+            STATE 1: INITIAL TWO LARGE OPTION CARDS (When activeOption === null)
+            ========================================================================= */}
+        {activeOption === null && (
           <div
             style={{
               display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
+              justifyContent: "center",
+              gap: 24,
               flexWrap: "wrap",
-              gap: 12,
-              marginBottom: 24,
+              marginTop: 18,
             }}
           >
-            <h2
+            {/* Card 1: CHOOSE YOUR OBJECTS (RANDOM OBJECTS) */}
+            <OptionCard
+              tag="SECTION 1"
+              icon="🎲"
+              title="CHOOSE YOUR OBJECTS"
+              desc="Pick from our collection of completely unrelated objects and let chaos do the rest."
+              cta="Choose Objects"
+              accent={COLORS.mustard}
+              onClick={() => {
+                setActiveOption("preset");
+                setSelectedIds([]);
+              }}
+            />
+
+            {/* Card 2: ADD YOUR OWN OBJECTS */}
+            <OptionCard
+              tag="SECTION 2"
+              icon="✍️"
+              title="ADD YOUR OWN OBJECTS"
+              desc="Got something weird in mind? Throw in your own objects and we'll make them spectacularly useless."
+              cta="Add Your Own"
+              accent={COLORS.purple}
+              onClick={() => {
+                setActiveOption("custom");
+                setSelectedIds([]);
+                setCustomObjects([]);
+                setCustomInput("");
+              }}
+            />
+          </div>
+        )}
+
+        {/* =========================================================================
+            STATE 2: ONLY SECTION 1 (When activeOption === 'preset')
+            ========================================================================= */}
+        {activeOption === "preset" && (
+          <div>
+            <div style={{ textAlign: "left", marginBottom: 18 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveOption(null);
+                  setSelectedIds([]);
+                }}
+                style={{
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontWeight: 700,
+                  fontSize: 13,
+                  border: `2.5px solid ${COLORS.ink}`,
+                  background: COLORS.white,
+                  padding: "8px 16px",
+                  borderRadius: 30,
+                  cursor: "pointer",
+                  boxShadow: `3px 3px 0 ${COLORS.ink}`,
+                  color: COLORS.ink,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                ← BACK TO OPTIONS
+              </button>
+            </div>
+
+            <section
               style={{
-                fontFamily: "'Bungee', cursive",
-                fontSize: 22,
-                margin: 0,
-                color: COLORS.ink,
+                background: COLORS.white,
+                border: `3.5px solid ${COLORS.ink}`,
+                borderRadius: 24,
+                padding: "32px 28px",
+                boxShadow: `8px 8px 0 ${COLORS.ink}`,
+                marginBottom: 36,
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 12,
+                  marginBottom: 24,
+                }}
+              >
+                <h2
+                  style={{
+                    fontFamily: "'Bungee', cursive",
+                    fontSize: 22,
+                    margin: 0,
+                    color: COLORS.ink,
+                    textAlign: "left",
+                  }}
+                >
+                  SECTION 1 — CHOOSE YOUR OBJECTS
+                </h2>
+
+                <div
+                  style={{
+                    background: selectedIds.length >= 2 ? COLORS.lime : COLORS.lightGray,
+                    border: `2.5px solid ${COLORS.ink}`,
+                    borderRadius: 20,
+                    padding: "4px 14px",
+                    fontWeight: 700,
+                    fontSize: 13,
+                    boxShadow: `2px 2px 0 ${COLORS.ink}`,
+                  }}
+                >
+                  {selectedIds.length} object{selectedIds.length === 1 ? "" : "s"} selected{" "}
+                  <span style={{ color: selectedIds.length < 2 ? COLORS.coral : COLORS.ink, fontSize: 12 }}>
+                    (min 2, max 3)
+                  </span>
+                </div>
+              </div>
+
+              <p style={{ fontSize: 14, color: COLORS.darkGray, marginBottom: 20, fontWeight: 500, textAlign: "left" }}>
+                Pick 2–3 things that have absolutely no business being together.
+              </p>
+
+              {/* OBJECT CHIPS GRID */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+                  gap: 14,
+                }}
+              >
+                {PRESET_OBJECTS.map((obj) => {
+                  const isSelected = selectedIds.includes(obj.id);
+                  return (
+                    <button
+                      key={obj.id}
+                      onClick={() => toggleSelect(obj.id)}
+                      type="button"
+                      style={{
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        fontWeight: 700,
+                        fontSize: 14,
+                        padding: "14px 10px",
+                        borderRadius: 16,
+                        cursor: "pointer",
+                        border: `3px solid ${COLORS.ink}`,
+                        background: isSelected ? COLORS.purple : COLORS.white,
+                        color: isSelected ? COLORS.white : COLORS.ink,
+                        boxShadow: isSelected ? `5px 5px 0 ${COLORS.ink}` : `3px 3px 0 ${COLORS.ink}`,
+                        transform: isSelected ? "translate(-2px, -2px)" : "translate(0, 0)",
+                        transition: "transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                        userSelect: "none",
+                      }}
+                    >
+                      <span style={{ fontSize: 28 }}>{obj.icon}</span>
+                      <span>{obj.label}</span>
+                      {isSelected && (
+                        <span
+                          style={{
+                            fontSize: 10,
+                            background: COLORS.lime,
+                            color: COLORS.ink,
+                            padding: "1px 7px",
+                            borderRadius: 10,
+                            border: `1.5px solid ${COLORS.ink}`,
+                            marginTop: 2,
+                          }}
+                        >
+                          SELECTED ✓
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* GENERATE BUTTON */}
+            <div style={{ textAlign: "center" }}>
+              <button
+                onClick={handleGenerate}
+                disabled={isGenerateDisabled}
+                style={{
+                  fontFamily: "'Bungee', cursive",
+                  fontSize: "clamp(17px, 2.4vw, 24px)",
+                  padding: "20px 42px",
+                  borderRadius: 50,
+                  border: `4px solid ${COLORS.ink}`,
+                  background: isGenerateDisabled ? "#D1C7BD" : COLORS.coral,
+                  color: isGenerateDisabled ? "#7A7268" : COLORS.white,
+                  cursor: isGenerateDisabled ? "not-allowed" : "pointer",
+                  boxShadow: isGenerateDisabled ? `3px 3px 0 ${COLORS.ink}` : `8px 8px 0 ${COLORS.ink}`,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 12,
+                  letterSpacing: 0.5,
+                }}
+              >
+                <span>⚡</span> GENERATE USELESS INVENTION <span>🚀</span>
+              </button>
+
+              <p
+                style={{
+                  marginTop: 16,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: isGenerateDisabled ? COLORS.coral : "#7A7268",
+                }}
+              >
+                {selectedIds.length < 2
+                  ? `Select at least ${2 - selectedIds.length} more object${2 - selectedIds.length === 1 ? "" : "s"} to unlock invention`
+                  : `${selectedIds.length} objects loaded and ready to ruin humanity.`}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            STATE 3: ONLY SECTION 2 (When activeOption === 'custom')
+            ========================================================================= */}
+        {activeOption === "custom" && (
+          <div>
+            <div style={{ textAlign: "left", marginBottom: 18 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveOption(null);
+                  setSelectedIds([]);
+                  setCustomObjects([]);
+                  setCustomInput("");
+                }}
+                style={{
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontWeight: 700,
+                  fontSize: 13,
+                  border: `2.5px solid ${COLORS.ink}`,
+                  background: COLORS.white,
+                  padding: "8px 16px",
+                  borderRadius: 30,
+                  cursor: "pointer",
+                  boxShadow: `3px 3px 0 ${COLORS.ink}`,
+                  color: COLORS.ink,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                ← BACK TO OPTIONS
+              </button>
+            </div>
+
+            <section
+              style={{
+                background: COLORS.white,
+                border: `3.5px solid ${COLORS.ink}`,
+                borderRadius: 24,
+                padding: "32px 28px",
+                boxShadow: `8px 8px 0 ${COLORS.ink}`,
+                marginBottom: 36,
                 textAlign: "left",
               }}
             >
-              SECTION 1 — CHOOSE YOUR OBJECTS
-            </h2>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                <h2
+                  style={{
+                    fontFamily: "'Bungee', cursive",
+                    fontSize: 20,
+                    margin: 0,
+                    color: COLORS.ink,
+                  }}
+                >
+                  SECTION 2 — ADD YOUR OWN OBJECTS
+                </h2>
+                <span
+                  style={{
+                    background: selectedIds.length >= 2 ? COLORS.lime : COLORS.lightGray,
+                    border: `2px solid ${COLORS.ink}`,
+                    borderRadius: 20,
+                    padding: "3px 12px",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: COLORS.ink,
+                  }}
+                >
+                  {selectedIds.length} added (min 2, max 3)
+                </span>
+              </div>
 
-            <div
-              style={{
-                background: selectedIds.length >= 2 ? COLORS.lime : COLORS.lightGray,
-                border: `2.5px solid ${COLORS.ink}`,
-                borderRadius: 20,
-                padding: "4px 14px",
-                fontWeight: 700,
-                fontSize: 13,
-                boxShadow: `2px 2px 0 ${COLORS.ink}`,
-              }}
-            >
-              {selectedIds.length} object{selectedIds.length === 1 ? "" : "s"} selected{" "}
-              <span style={{ color: selectedIds.length < 2 ? COLORS.coral : COLORS.ink, fontSize: 12 }}>
-                (min 2, max 5)
-              </span>
-            </div>
-          </div>
+              <p style={{ fontSize: 14, color: COLORS.darkGray, marginBottom: 18, fontWeight: 500 }}>
+                Add 2–3 objects from your questionable imagination.
+              </p>
 
-          {/* OBJECT CHIPS GRID */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
-              gap: 14,
-            }}
-          >
-            {PRESET_OBJECTS.map((obj) => {
-              const isSelected = selectedIds.includes(obj.id);
-              return (
+              <form
+                onSubmit={handleAddCustom}
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <input
+                  type="text"
+                  value={customInput}
+                  onChange={(e) => setCustomInput(e.target.value)}
+                  placeholder="Type something completely unnecessary..."
+                  maxLength={35}
+                  style={{
+                    flex: "1 1 280px",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontSize: 15,
+                    fontWeight: 600,
+                    padding: "12px 18px",
+                    border: `3px solid ${COLORS.ink}`,
+                    borderRadius: 40,
+                    outline: "none",
+                    background: COLORS.white,
+                    color: COLORS.ink,
+                    boxShadow: `3px 3px 0 ${COLORS.ink}`,
+                  }}
+                />
+
                 <button
-                  key={obj.id}
-                  onClick={() => toggleSelect(obj.id)}
-                  type="button"
+                  type="submit"
+                  disabled={!customInput.trim() || customObjects.length >= 3}
                   style={{
                     fontFamily: "'Space Grotesk', sans-serif",
                     fontWeight: 700,
                     fontSize: 14,
-                    padding: "14px 10px",
-                    borderRadius: 16,
-                    cursor: "pointer",
+                    padding: "12px 22px",
                     border: `3px solid ${COLORS.ink}`,
-                    background: isSelected ? COLORS.purple : COLORS.white,
-                    color: isSelected ? COLORS.white : COLORS.ink,
-                    boxShadow: isSelected ? `5px 5px 0 ${COLORS.ink}` : `3px 3px 0 ${COLORS.ink}`,
-                    transform: isSelected ? "translate(-2px, -2px)" : "translate(0, 0)",
-                    transition: "transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    userSelect: "none",
+                    background: customInput.trim() && customObjects.length < 3 ? COLORS.blue : COLORS.lightGray,
+                    color: customInput.trim() && customObjects.length < 3 ? COLORS.white : "#888",
+                    borderRadius: 40,
+                    cursor: customInput.trim() && customObjects.length < 3 ? "pointer" : "not-allowed",
+                    boxShadow: `3px 3px 0 ${COLORS.ink}`,
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  <span style={{ fontSize: 28 }}>{obj.icon}</span>
-                  <span>{obj.label}</span>
-                  {isSelected && (
-                    <span
-                      style={{
-                        fontSize: 10,
-                        background: COLORS.lime,
-                        color: COLORS.ink,
-                        padding: "1px 7px",
-                        borderRadius: 10,
-                        border: `1.5px solid ${COLORS.ink}`,
-                        marginTop: 2,
-                      }}
-                    >
-                      SELECTED ✓
-                    </span>
-                  )}
+                  + Add Object
                 </button>
-              );
-            })}
-          </div>
-        </section>
+              </form>
 
-        {/* SECTION 2 — ADD YOUR OWN OBJECTS */}
-        <section
-          style={{
-            background: COLORS.white,
-            border: `3.5px solid ${COLORS.ink}`,
-            borderRadius: 24,
-            padding: "28px",
-            boxShadow: `8px 8px 0 ${COLORS.ink}`,
-            marginBottom: 40,
-            textAlign: "left",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <h2
-              style={{
-                fontFamily: "'Bungee', cursive",
-                fontSize: 20,
-                margin: 0,
-                color: COLORS.ink,
-              }}
-            >
-              SECTION 2 — ADD YOUR OWN OBJECTS
-            </h2>
-            <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.darkGray }}>
-              {customObjects.length}/3 Custom added
-            </span>
-          </div>
+              {inputError && (
+                <div style={{ color: COLORS.coral, fontSize: 13, fontWeight: 700, marginTop: 10 }}>
+                  ⚠ {inputError}
+                </div>
+              )}
 
-          <p style={{ fontSize: 14, color: COLORS.darkGray, marginBottom: 18, fontWeight: 500 }}>
-            Got odd clutter lying around? Type anything below to throw it into the invention lab.
-          </p>
+              {/* CUSTOM CHIPS */}
+              {customObjects.length > 0 && (
+                <div style={{ marginTop: 22 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", color: "#777", marginBottom: 10 }}>
+                    Your Custom Junk:
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                    {customObjects.map((cust) => {
+                      const isSelected = selectedIds.includes(cust.id);
+                      return (
+                        <div
+                          key={cust.id}
+                          onClick={() => toggleSelect(cust.id)}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 8,
+                            padding: "8px 16px",
+                            borderRadius: 30,
+                            border: `2.5px solid ${COLORS.ink}`,
+                            background: isSelected ? COLORS.purple : COLORS.white,
+                            color: isSelected ? COLORS.white : COLORS.ink,
+                            fontWeight: 700,
+                            fontSize: 14,
+                            boxShadow: isSelected ? `4px 4px 0 ${COLORS.ink}` : `2px 2px 0 ${COLORS.ink}`,
+                            cursor: "pointer",
+                            userSelect: "none",
+                            transition: "transform 0.12s ease",
+                          }}
+                        >
+                          <span>{cust.icon}</span>
+                          <span>{cust.label}</span>
+                          <button
+                            type="button"
+                            onClick={(e) => handleRemoveCustom(cust.id, e)}
+                            title="Remove custom object"
+                            style={{
+                              background: isSelected ? COLORS.white : COLORS.ink,
+                              color: isSelected ? COLORS.ink : COLORS.white,
+                              border: "none",
+                              borderRadius: "50%",
+                              width: 20,
+                              height: 20,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: 12,
+                              cursor: "pointer",
+                              marginLeft: 4,
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </section>
 
-          {/* Form to add custom items */}
-          <form
-            onSubmit={handleAddCustom}
-            style={{
-              display: "flex",
-              gap: 12,
-              flexWrap: "wrap",
-            }}
-          >
-            <input
-              type="text"
-              value={customInput}
-              onChange={(e) => setCustomInput(e.target.value)}
-              placeholder="Type something completely unnecessary..."
-              maxLength={35}
-              style={{
-                flex: "1 1 280px",
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: 15,
-                fontWeight: 600,
-                padding: "12px 18px",
-                border: `3px solid ${COLORS.ink}`,
-                borderRadius: 40,
-                outline: "none",
-                background: COLORS.white,
-                color: COLORS.ink,
-                boxShadow: `3px 3px 0 ${COLORS.ink}`,
-              }}
-            />
+            {/* GENERATE BUTTON */}
+            <div style={{ textAlign: "center" }}>
+              <button
+                onClick={handleGenerate}
+                disabled={isGenerateDisabled}
+                style={{
+                  fontFamily: "'Bungee', cursive",
+                  fontSize: "clamp(17px, 2.4vw, 24px)",
+                  padding: "20px 42px",
+                  borderRadius: 50,
+                  border: `4px solid ${COLORS.ink}`,
+                  background: isGenerateDisabled ? "#D1C7BD" : COLORS.coral,
+                  color: isGenerateDisabled ? "#7A7268" : COLORS.white,
+                  cursor: isGenerateDisabled ? "not-allowed" : "pointer",
+                  boxShadow: isGenerateDisabled ? `3px 3px 0 ${COLORS.ink}` : `8px 8px 0 ${COLORS.ink}`,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 12,
+                  letterSpacing: 0.5,
+                }}
+              >
+                <span>⚡</span> GENERATE USELESS INVENTION <span>🚀</span>
+              </button>
 
-            <button
-              type="submit"
-              disabled={!customInput.trim() || customObjects.length >= 3}
-              style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontWeight: 700,
-                fontSize: 14,
-                padding: "12px 22px",
-                border: `3px solid ${COLORS.ink}`,
-                background: customInput.trim() && customObjects.length < 3 ? COLORS.blue : COLORS.lightGray,
-                color: customInput.trim() && customObjects.length < 3 ? COLORS.white : "#888",
-                borderRadius: 40,
-                cursor: customInput.trim() && customObjects.length < 3 ? "pointer" : "not-allowed",
-                boxShadow: `3px 3px 0 ${COLORS.ink}`,
-                whiteSpace: "nowrap",
-              }}
-            >
-              + Add Object
-            </button>
-          </form>
-
-          {inputError && (
-            <div style={{ color: COLORS.coral, fontSize: 13, fontWeight: 700, marginTop: 10 }}>
-              ⚠ {inputError}
+              <p
+                style={{
+                  marginTop: 16,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: isGenerateDisabled ? COLORS.coral : "#7A7268",
+                }}
+              >
+                {selectedIds.length < 2
+                  ? `Add at least ${2 - selectedIds.length} more custom object${2 - selectedIds.length === 1 ? "" : "s"} to unlock invention`
+                  : `${selectedIds.length} custom objects ready to ruin humanity.`}
+              </p>
             </div>
-          )}
-
-          {/* CUSTOM CHIPS ROW */}
-          {customObjects.length > 0 && (
-            <div style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", color: "#777", marginBottom: 10 }}>
-                Your Custom Junk:
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                {customObjects.map((cust) => {
-                  const isSelected = selectedIds.includes(cust.id);
-                  return (
-                    <div
-                      key={cust.id}
-                      onClick={() => toggleSelect(cust.id)}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 8,
-                        padding: "8px 16px",
-                        borderRadius: 30,
-                        border: `2.5px solid ${COLORS.ink}`,
-                        background: isSelected ? COLORS.lime : COLORS.white,
-                        color: COLORS.ink,
-                        fontWeight: 700,
-                        fontSize: 14,
-                        boxShadow: `3px 3px 0 ${COLORS.ink}`,
-                        cursor: "pointer",
-                        userSelect: "none",
-                        transition: "transform 0.12s ease",
-                      }}
-                    >
-                      <span>{cust.icon}</span>
-                      <span>{cust.label}</span>
-                      <button
-                        type="button"
-                        onClick={(e) => handleRemoveCustom(cust.id, e)}
-                        title="Remove custom object"
-                        style={{
-                          background: COLORS.ink,
-                          color: COLORS.white,
-                          border: "none",
-                          borderRadius: "50%",
-                          width: 20,
-                          height: 20,
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 12,
-                          cursor: "pointer",
-                          marginLeft: 4,
-                        }}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* MAIN GENERATE BUTTON */}
-        <div style={{ textAlign: "center" }}>
-          <button
-            onClick={handleGenerate}
-            disabled={isGenerateDisabled}
-            style={{
-              fontFamily: "'Bungee', cursive",
-              fontSize: "clamp(17px, 2.4vw, 24px)",
-              padding: "20px 42px",
-              borderRadius: 50,
-              border: `4px solid ${COLORS.ink}`,
-              background: isGenerateDisabled ? "#D1C7BD" : COLORS.coral,
-              color: isGenerateDisabled ? "#7A7268" : COLORS.white,
-              cursor: isGenerateDisabled ? "not-allowed" : "pointer",
-              boxShadow: isGenerateDisabled ? `3px 3px 0 ${COLORS.ink}` : `8px 8px 0 ${COLORS.ink}`,
-              transform: isGenerateDisabled ? "none" : "translate(0,0)",
-              transition: "transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 12,
-              letterSpacing: 0.5,
-            }}
-            onMouseEnter={(e) => {
-              if (!isGenerateDisabled) {
-                e.currentTarget.style.transform = "translate(-3px, -3px)";
-                e.currentTarget.style.boxShadow = `11px 11px 0 ${COLORS.ink}`;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isGenerateDisabled) {
-                e.currentTarget.style.transform = "translate(0, 0)";
-                e.currentTarget.style.boxShadow = `8px 8px 0 ${COLORS.ink}`;
-              }
-            }}
-          >
-            <span>⚡</span> GENERATE USELESS INVENTION <span>🚀</span>
-          </button>
-
-          <p
-            style={{
-              marginTop: 16,
-              fontSize: 13,
-              fontWeight: 600,
-              color: isGenerateDisabled ? COLORS.coral : "#7A7268",
-            }}
-          >
-            {selectedIds.length < 2
-              ? `Select at least ${2 - selectedIds.length} more object${2 - selectedIds.length === 1 ? "" : "s"} to unlock invention`
-              : `${selectedIds.length} objects loaded and ready to ruin humanity.`}
-          </p>
-        </div>
+          </div>
+        )}
       </main>
 
       {/* =========================================================================
@@ -938,7 +1169,6 @@ export default function SoloMode({ onBack, onOpenHall }) {
 
             {/* 1. INVENTION HERO */}
             <div style={{ textAlign: "center", marginBottom: 28, borderBottom: `3px dashed ${COLORS.ink}`, paddingBottom: 28 }}>
-              {/* Playful composite illustration */}
               <div
                 style={{
                   background: `linear-gradient(135deg, ${COLORS.cream}, #FFE4D6)`,
@@ -972,7 +1202,6 @@ export default function SoloMode({ onBack, onOpenHall }) {
                     </div>
                   ))}
                 </div>
-                {/* Comic zap background doodle */}
                 <div
                   style={{
                     position: "absolute",
@@ -1202,7 +1431,6 @@ export default function SoloMode({ onBack, onOpenHall }) {
                 AI ANALYSIS / POINTLESS SCORES
               </div>
 
-              {/* Individual metric bars */}
               <div style={{ display: "grid", gap: 12, marginBottom: 18 }}>
                 {[
                   { label: "USELESSNESS", val: generatedResult.scores.uselessness, color: COLORS.purple },
@@ -1236,7 +1464,6 @@ export default function SoloMode({ onBack, onOpenHall }) {
                 ))}
               </div>
 
-              {/* Highlight Final Overall Pointlessness Score */}
               <div
                 style={{
                   background: `linear-gradient(135deg, ${COLORS.purple}, #6366F1)`,
