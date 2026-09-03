@@ -12,6 +12,21 @@ const sanitizeScore = (val, fallback = 75) => {
   return Math.max(0, Math.min(100, Math.round(num)));
 };
 
+// Generate an invention image via Pollinations.ai (free, no API key needed)
+// Returns a direct URL the frontend can use as an <img> src
+// Builds an enriched prompt from the invention name, selected items, and AI-generated imagePrompt
+const generateInventionImage = (inventionName, selectedItems, imagePrompt) => {
+  const itemList = selectedItems.join(' and ');
+  const enrichedPrompt = [
+    `Photorealistic product photography of "${inventionName}",`,
+    `a single physical object that combines: ${itemList}.`,
+    imagePrompt,
+    'Clean white studio background, centered product, realistic studio lighting, realistic shadows, all items physically connected and clearly visible, no text, no labels, no cartoons.'
+  ].join(' ');
+  const encoded = encodeURIComponent(enrichedPrompt);
+  return `https://image.pollinations.ai/prompt/${encoded}?width=512&height=512&nologo=true&model=flux`;
+};
+
 // @route   POST /api/inventions/generate
 // @desc    Generate a funny useless invention using Groq AI from 2-3 selected items
 router.post('/generate', async (req, res) => {
@@ -457,11 +472,17 @@ Use exactly this structure:
       delete invention.scores.engineeringAbsurdity;
     }
 
-    // 10. Return the structured invention
+    // 10. Build enriched image URL from invention name, selected items, and AI imagePrompt
+    const imageUrl = invention.imagePrompt
+      ? generateInventionImage(invention.name, matchedNames, invention.imagePrompt)
+      : null;
+
+    // 11. Return the structured invention with image URL
     return res.status(200).json({
       success: true,
       selectedItems: matchedNames,
-      invention
+      invention,
+      imageUrl
     });
   } catch (error) {
     console.error('Invention generation error:', error);
