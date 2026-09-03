@@ -10,9 +10,8 @@
 
 
 ### Team Members
-- Team Lead: [Name] - [College]
-- Member 2: [Name] - [College]
-- Member 3: [Name] - [College]
+- Team Lead: [Pavithra R S] - [LBSITW]
+- Member 2: [Nima Maria Jacob] - [LBSITW]
 
 ### Project Description
 [2-3 lines about what your project does]
