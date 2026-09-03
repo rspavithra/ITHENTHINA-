@@ -474,7 +474,7 @@ export default function SoloMode({ onBack, onOpenHall }) {
               lineHeight: 1,
             }}
           >
-            SOLO MODE
+            WHAT SHOULD WE RUIN?
           </h1>
 
           <p
@@ -1602,7 +1602,7 @@ export default function SoloMode({ onBack, onOpenHall }) {
           margin: "0 auto",
         }}
       >
-        ITHENTHINA? Solo Invention Lab — where bad ideas find their true potential.
+        ITHENTHINA? Invention Lab — where bad ideas find their true potential.
       </footer>
     </div>
   );

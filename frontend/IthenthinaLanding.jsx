@@ -559,38 +559,40 @@ export default function IthenthinaLanding({ onStartSolo, onOpenHall }) {
             An AI invention lab with zero standards and even less shame. Feed it junk, get back a patent nobody asked for.
           </p>
 
-          <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 44, flexWrap: "wrap", position: "relative", zIndex: 2 }}>
-            <ModeCard
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 44, position: "relative", zIndex: 2 }}>
+            <button
               onClick={onStartSolo}
-              accent={COLORS.mustard}
-              iconBg={COLORS.mustard}
-              icon={
-                <svg viewBox="0 0 24 24" width={24} height={24} fill="none" stroke={COLORS.ink} strokeWidth="2.4" strokeLinecap="round">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
-                </svg>
-              }
-              title="Solo mode"
-              desc="Grab random junk, let the AI turn it into a useless masterpiece, and read your roast alone."
-              cta="Start inventing"
-            />
-            <ModeCard
-              accent={COLORS.coral}
-              iconBg={COLORS.coral}
-              icon={
-                <svg viewBox="0 0 24 24" width={24} height={24} fill="none" stroke={COLORS.ink} strokeWidth="2.4" strokeLinecap="round">
-                  <circle cx="7" cy="8" r="3.4" />
-                  <circle cx="17" cy="8" r="3.4" />
-                  <path d="M2 21c0-3.6 2.4-6.4 5.6-7" />
-                  <path d="M22 21c0-3.6-2.4-6.4-5.6-7" />
-                  <path d="M11 21c.3-3.2 2-5.6 4.6-6.6" />
-                  <path d="M13 21c-.3-3.2-2-5.6-4.6-6.6" />
-                </svg>
-              }
-              title="Two-player battle"
-              desc="Same objects, same clock, opposite ideas. AI judges both disasters and crowns a winner."
-              cta="Start a battle"
-            />
+              style={{
+                fontFamily: "'Bungee', cursive",
+                fontSize: "clamp(20px, 3vw, 28px)",
+                letterSpacing: 1.5,
+                border: `4px solid ${COLORS.ink}`,
+                background: COLORS.coral,
+                color: COLORS.white,
+                padding: "20px 48px",
+                borderRadius: 50,
+                cursor: "pointer",
+                boxShadow: `7px 7px 0 ${COLORS.ink}`,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "transform .15s ease, box-shadow .15s ease, background .15s ease, color .15s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translate(-3px, -3px)";
+                e.currentTarget.style.boxShadow = `10px 10px 0 ${COLORS.ink}`;
+                e.currentTarget.style.background = COLORS.mustard;
+                e.currentTarget.style.color = COLORS.ink;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translate(0, 0)";
+                e.currentTarget.style.boxShadow = `7px 7px 0 ${COLORS.ink}`;
+                e.currentTarget.style.background = COLORS.coral;
+                e.currentTarget.style.color = COLORS.white;
+              }}
+            >
+              START THE CHAOS
+            </button>
           </div>
 
           <p style={{ marginTop: 30, fontSize: 13, fontWeight: 500, color: "#7a7268", position: "relative", zIndex: 2 }}>
