@@ -73,10 +73,6 @@ For Software:
 
 <img width="1920" height="1020" alt="Screenshot 2026-09-04 092238" src="https://github.com/user-attachments/assets/7aeace5a-705d-4b54-b2f3-97dafba745a6" />
 
-### Project Demo
-# Video
-https://drive.google.com/drive/folders/1O_vQ6wR_9n9w8cKz_21Wz3X6yJ9Z7K-k
-
 ## Team Contributions
 - Pavithra R S: UI/UX Design and Frontend Development
 - Nima Maria Jacob: Backend Development and API Integration
