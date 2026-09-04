@@ -256,14 +256,38 @@ export default function SoloMode({ onBack, onOpenHall }) {
 
   const loadingTimerRef = useRef(null);
   const messageIntervalRef = useRef(null);
+  const fetchedResultRef = useRef(null);
+  const animationFinishedRef = useRef(false);
+
+  const completeLoading = () => {
+    if (messageIntervalRef.current) clearInterval(messageIntervalRef.current);
+    setIsLoading(false);
+
+    if (fetchedResultRef.current?.error) {
+      setToastMessage('⚠️ ' + fetchedResultRef.current.error);
+    } else if (fetchedResultRef.current?.result) {
+      setGeneratedResult(fetchedResultRef.current.result);
+      setShowModal(true);
+    }
+  };
+
+  const handleLineAnimationEnd = () => {
+    animationFinishedRef.current = true;
+    if (fetchedResultRef.current) {
+      completeLoading();
+    }
+  };
 
   // Rotate loading messages
   useEffect(() => {
     if (isLoading) {
+      fetchedResultRef.current = null;
+      animationFinishedRef.current = false;
       setLoadingMsgIndex(0);
+
       messageIntervalRef.current = setInterval(() => {
         setLoadingMsgIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
-      }, 1800);
+      }, 1200);
 
       const allItems = [
         ...PRESET_OBJECTS.filter((o) => selectedIds.includes(o.id)),
@@ -280,52 +304,52 @@ export default function SoloMode({ onBack, onOpenHall }) {
       })
         .then((r) => r.json())
         .then((data) => {
-          if (messageIntervalRef.current) clearInterval(messageIntervalRef.current);
-          setIsLoading(false);
-
           if (!data.success || !data.invention) {
-            setToastMessage('⚠️ AI generation failed: ' + (data.message || 'Unknown error'));
-            return;
+            fetchedResultRef.current = { error: data.message || 'Unknown error' };
+          } else {
+            const inv = data.invention;
+
+            // Map backend shape → frontend shape (keeping all existing UI fields intact)
+            const result = {
+              id: 'inv_' + Date.now(),
+              name: inv.name,
+              selectedItems: data.selectedItems || itemNames,
+              icons: allItems.map((o) => o.icon),
+              description: inv.idea || '',
+              problemSolves: inv.problemSolved || '',
+              details: {
+                price: inv.price || 'Price unknown',
+                demand: inv.marketDemand || 'Unknown',
+                complexity: inv.complexity || 'Unknown',
+                environment: inv.environment || 'Unknown',
+              },
+              scores: {
+                uselessness: inv.scores?.uselessness ?? 95,
+                creativity: inv.scores?.creativity ?? 85,
+                ridiculousness: inv.scores?.ridiculousness ?? 92,
+                wasteOfMoney: inv.scores?.wasteOfMoney ?? 90,
+                overall: inv.scores?.overall ?? 93,
+              },
+              roast: inv.roast || '',
+              imageUrl: data.imageUrl || null,
+              _rawInvention: inv,
+              createdAt: new Date().toISOString(),
+            };
+
+            fetchedResultRef.current = { result };
           }
 
-          const inv = data.invention;
-
-          // Map backend shape → frontend shape (keeping all existing UI fields intact)
-          const result = {
-            id: 'inv_' + Date.now(),
-            name: inv.name,
-            selectedItems: data.selectedItems || itemNames,
-            icons: allItems.map((o) => o.icon),
-            description: inv.idea || '',
-            problemSolves: inv.problemSolved || '',
-            details: {
-              price: inv.price || 'Price unknown',
-              demand: inv.marketDemand || 'Unknown',
-              complexity: inv.complexity || 'Unknown',
-              environment: inv.environment || 'Unknown',
-            },
-            scores: {
-              uselessness: inv.scores?.uselessness ?? 95,
-              creativity: inv.scores?.creativity ?? 85,
-              ridiculousness: inv.scores?.ridiculousness ?? 92,
-              wasteOfMoney: inv.scores?.wasteOfMoney ?? 90,
-              overall: inv.scores?.overall ?? 93,
-            },
-            roast: inv.roast || '',
-            imageUrl: data.imageUrl || null,
-            // Keep raw invention for saving
-            _rawInvention: inv,
-            createdAt: new Date().toISOString(),
-          };
-
-          setGeneratedResult(result);
-          setShowModal(true);
+          // ONLY reveal output if the line has already reached the end
+          if (animationFinishedRef.current) {
+            completeLoading();
+          }
         })
         .catch((err) => {
-          if (messageIntervalRef.current) clearInterval(messageIntervalRef.current);
-          setIsLoading(false);
-          setToastMessage('⚠️ Could not reach the server. Check your connection.');
           console.error('Generation error:', err);
+          fetchedResultRef.current = { error: 'Could not reach the server. Check your connection.' };
+          if (animationFinishedRef.current) {
+            completeLoading();
+          }
         });
 
     } else {
@@ -1216,11 +1240,12 @@ export default function SoloMode({ onBack, onOpenHall }) {
               }}
             >
               <div
+                onAnimationEnd={handleLineAnimationEnd}
                 style={{
                   height: "100%",
                   background: `linear-gradient(90deg, ${COLORS.purple}, ${COLORS.lime})`,
                   width: "100%",
-                  animation: "fillProgress 5.6s linear forwards",
+                  animation: "fillProgress 3.5s linear forwards",
                 }}
               />
             </div>
