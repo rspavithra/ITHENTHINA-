@@ -6,42 +6,58 @@
 
 
 ## Basic Details
-### Team Name: [Name]
+### Team Name: [Code Red]
 
 
 ### Team Members
-- Team Lead: [Pavithra R S] - [LBSITW]
+- Member 1: [Pavithra R S] - [LBSITW]
 - Member 2: [Nima Maria Jacob] - [LBSITW]
 
 ### Project Description
-[2-3 lines about what your project does]
+ITHENTHINA is an AI-powered useless invention generator that combines 2–3 everyday objects to create funny, ridiculous, and completely useless inventions. Users can generate, save, and explore their inventions in the Hall of Uselessness, complete with AI-generated images, scores, and roasts
 
 ### The Problem (that doesn't exist)
-[What ridiculous problem are you solving?]
+The problem that doesn't exist is **the lack of completely useless inventions in everyday life**. ITHENTHINA solves this serious problem by creating ridiculous products that solve problems nobody actually has.
+
 
 ### The Solution (that nobody asked for)
-[How are you solving it? Keep it fun!]
+ITHENTHINA solves this non-existent problem by generating funny, useless inventions that combine everyday objects in ridiculous ways. It uses AI to create detailed descriptions, funny roasts, and even generates images of these absurd creations.
 
 ## Technical Details
 ### Technologies/Components Used
 For Software:
-- [Languages used]
-- [Frameworks used]
-- [Libraries used]
-- [Tools used]
-
-For Hardware:
-- [List main components]
-- [List specifications]
-- [List tools required]
+- **Frontend**: React.js (Vite)
+- **Backend**: Node.js (Express)
+- **Database**: MongoDB
+- **AI**: Groq API, Google GenAI API
+- **UI Libraries**: Lucide-React, Framer Motion
 
 ### Implementation
 For Software:
 # Installation
-[commands]
+
+```bash
+# Install backend dependencies
+cd backend
+npm install
+
+# Install frontend dependencies
+cd ../frontend
+npm install
+```
 
 # Run
-[commands]
+
+```bash
+# Start backend server (in a separate terminal)
+cd backend
+npm run dev
+
+# Start frontend development server
+cd ../frontend
+npm run dev
+```
+
 
 ### Project Documentation
 For Software:
@@ -56,41 +72,13 @@ For Software:
 ![Screenshot3](Add screenshot 3 here with proper name)
 *Add caption explaining what this shows*
 
-# Diagrams
-![Workflow](Add your workflow/architecture diagram here)
-*Add caption explaining your workflow*
-
-For Hardware:
-
-# Schematic & Circuit
-![Circuit](Add your circuit diagram here)
-*Add caption explaining connections*
-
-![Schematic](Add your schematic diagram here)
-*Add caption explaining the schematic*
-
-# Build Photos
-![Components](Add photo of your components here)
-*List out all components shown*
-
-![Build](Add photos of build process here)
-*Explain the build steps*
-
-![Final](Add photo of final product here)
-*Explain the final build*
-
 ### Project Demo
 # Video
-[Add your demo video link here]
-*Explain what the video demonstrates*
-
-# Additional Demos
-[Add any extra demo materials/links]
+https://drive.google.com/drive/folders/1O_vQ6wR_9n9w8cKz_21Wz3X6yJ9Z7K-k
 
 ## Team Contributions
-- [Name 1]: [Specific contributions]
-- [Name 2]: [Specific contributions]
-- [Name 3]: [Specific contributions]
+- [Pavithra R S]: UI/UX Design and Frontend Development
+- [Nima Maria Jacob]: Backend Development and API Integration
 
 ---
 Made with ❤️ at TinkerHub Useless Projects 
