@@ -13,19 +13,29 @@ const COLORS = {
   lightGray: "#F4EFEA",
 };
 
-const PRESET_OBJECTS = [
+const API_BASE = 'http://localhost:5000';
+
+const PRESET_OBJECTS_FALLBACK = [
   { id: "bucket", label: "Bucket", icon: "🪣" },
   { id: "spoon", label: "Spoon", icon: "🥄" },
-  { id: "sock", label: "Sock", icon: "🧦" },
   { id: "umbrella", label: "Umbrella", icon: "☂️" },
   { id: "toothbrush", label: "Toothbrush", icon: "🪥" },
+  { id: "toaster", label: "Toaster", icon: "🍞" },
+  { id: "sock", label: "Sock", icon: "🧦" },
+  { id: "banana", label: "Banana", icon: "🍌" },
+  { id: "rubberduck", label: "Rubber Duck", icon: "🦆" },
+  { id: "alarmclock", label: "Alarm Clock", icon: "⏰" },
+  { id: "shoe", label: "Shoe", icon: "👟" },
+  { id: "candle", label: "Candle", icon: "🕯️" },
+  { id: "wheel", label: "Wheel", icon: "🛞" },
+  { id: "book", label: "Book", icon: "📖" },
   { id: "teddy", label: "Teddy Bear", icon: "🧸" },
   { id: "battery", label: "Battery", icon: "🔋" },
-  { id: "wheel", label: "Wheel", icon: "🛞" },
   { id: "magnet", label: "Magnet", icon: "🧲" },
   { id: "rope", label: "Rope", icon: "🪢" },
-  { id: "banana", label: "Banana", icon: "🍌" },
   { id: "phone", label: "Phone", icon: "📱" },
+  { id: "fan", label: "Fan", icon: "🪭" },
+  { id: "sunglasses", label: "Sunglasses", icon: "🕶️" },
 ];
 
 const LOADING_MESSAGES = [
@@ -58,15 +68,12 @@ function generateInventionData(selectedItems) {
 
   const cleanNames = names.map((n) => n.toUpperCase().replace(/\s+/g, ""));
   let mainName = "";
-  if (cleanNames.length >= 2) {
-    const part1 = cleanNames[0].substring(0, Math.min(4, cleanNames[0].length));
-    const part2 = cleanNames[1];
-    const part3 = cleanNames.length > 2 ? cleanNames[2].slice(-3) : "";
-    const suffixes = ["3000™", "MAX PRO", "HYBRID 9000", "ULTRA-GIZMO", "QUANTUM X", "TURBO-MATIC"];
-    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-    mainName = `${part1}O${part2}${part3} ${suffix}`;
+  if (names.length >= 2) {
+    const descriptors = ["Simulator", "Machine", "Apparatus", "Contraption", "Device", "System"];
+    const descriptor = descriptors[Math.floor(Math.random() * descriptors.length)];
+    mainName = `${names.join(" ")} ${descriptor}`;
   } else {
-    mainName = "CONTRAPTION-O-MATIC 3000™";
+    mainName = "Useless Invention Machine";
   }
 
   const itemsList = names.join(", ");
@@ -91,19 +98,27 @@ function generateInventionData(selectedItems) {
 
   const roast = ROASTS[Math.floor(Math.random() * ROASTS.length)];
 
-  return {
-    id: "inv_" + Date.now(),
-    name: mainName,
-    selectedItems: names,
-    icons,
-    description: descriptions[Math.floor(Math.random() * descriptions.length)],
-    problemSolves: problems[Math.floor(Math.random() * problems.length)],
-    details: {
-      price: "₹" + (Math.floor(Math.random() * 40000) + 19999).toLocaleString(),
-      demand: (Math.random() * 0.009 + 0.001).toFixed(3) + "%",
-      complexity: "Unnecessarily High",
-      environment: "We don't want to talk about it.",
-    },
+    const funnyDemands = [
+      "Zero — even the inventor's mom refused a sample.",
+      "Purchased exclusively by accident at 3 AM.",
+      "Rejected by 100% of humans and most house pets.",
+      "Banned in 14 countries for wasting everyone's time.",
+      "Only desired by people who enjoy unnecessary confusion."
+    ];
+
+    return {
+      id: "inv_" + Date.now(),
+      name: mainName,
+      selectedItems: names,
+      icons,
+      description: descriptions[Math.floor(Math.random() * descriptions.length)],
+      problemSolves: problems[Math.floor(Math.random() * problems.length)],
+      details: {
+        price: "₹" + (names.length * 25 + Math.floor(Math.random() * 20)) + " (Tape included)",
+        demand: funnyDemands[Math.floor(Math.random() * funnyDemands.length)],
+        complexity: "Unnecessarily High",
+        environment: "We don't want to talk about it.",
+      },
     scores: {
       uselessness: uselessScore,
       creativity: creativityScore,
@@ -204,6 +219,27 @@ export default function SoloMode({ onBack, onOpenHall }) {
   // Option state: null (initial 2 cards) | 'preset' | 'custom'
   const [activeOption, setActiveOption] = useState(null);
 
+  // Items loaded from backend, falling back to static list
+  const [PRESET_OBJECTS, setPresetObjects] = useState(PRESET_OBJECTS_FALLBACK);
+
+  // Load items from backend
+  useEffect(() => {
+    fetch(`${API_BASE}/api/items`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.items)) {
+          // Map backend shape { name, icon } to frontend shape { id, label, icon }
+          const mapped = data.items.map((item) => ({
+            id: String(item.id || item.name).toLowerCase().replace(/\s+/g, '-'),
+            label: item.name,
+            icon: item.icon || '📦',
+          }));
+          setPresetObjects(mapped);
+        }
+      })
+      .catch(() => { /* silently use fallback */ });
+  }, []);
+
   const [selectedIds, setSelectedIds] = useState([]);
   const [customObjects, setCustomObjects] = useState([]);
   const [customInput, setCustomInput] = useState("");
@@ -229,19 +265,69 @@ export default function SoloMode({ onBack, onOpenHall }) {
         setLoadingMsgIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
       }, 1800);
 
-      loadingTimerRef.current = setTimeout(() => {
-        setIsLoading(false);
-        if (messageIntervalRef.current) clearInterval(messageIntervalRef.current);
+      const allItems = [
+        ...PRESET_OBJECTS.filter((o) => selectedIds.includes(o.id)),
+        ...customObjects.filter((o) => selectedIds.includes(o.id)),
+      ];
 
-        const allItems = [
-          ...PRESET_OBJECTS.filter((o) => selectedIds.includes(o.id)),
-          ...customObjects.filter((o) => selectedIds.includes(o.id)),
-        ];
+      const itemNames = allItems.map((o) => o.label);
 
-        const result = generateInventionData(allItems);
-        setGeneratedResult(result);
-        setShowModal(true);
-      }, 5600);
+      // Call backend AI generation
+      fetch(`${API_BASE}/api/inventions/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: itemNames }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (messageIntervalRef.current) clearInterval(messageIntervalRef.current);
+          setIsLoading(false);
+
+          if (!data.success || !data.invention) {
+            setToastMessage('⚠️ AI generation failed: ' + (data.message || 'Unknown error'));
+            return;
+          }
+
+          const inv = data.invention;
+
+          // Map backend shape → frontend shape (keeping all existing UI fields intact)
+          const result = {
+            id: 'inv_' + Date.now(),
+            name: inv.name,
+            selectedItems: data.selectedItems || itemNames,
+            icons: allItems.map((o) => o.icon),
+            description: inv.idea || '',
+            problemSolves: inv.problemSolved || '',
+            details: {
+              price: inv.price || 'Price unknown',
+              demand: inv.marketDemand || 'Unknown',
+              complexity: inv.complexity || 'Unknown',
+              environment: inv.environment || 'Unknown',
+            },
+            scores: {
+              uselessness: inv.scores?.uselessness ?? 95,
+              creativity: inv.scores?.creativity ?? 85,
+              ridiculousness: inv.scores?.ridiculousness ?? 92,
+              wasteOfMoney: inv.scores?.wasteOfMoney ?? 90,
+              overall: inv.scores?.overall ?? 93,
+            },
+            roast: inv.roast || '',
+            imageUrl: data.imageUrl || null,
+            // Keep raw invention for saving
+            _rawInvention: inv,
+            createdAt: new Date().toISOString(),
+          };
+
+          setGeneratedResult(result);
+          setShowModal(true);
+        })
+        .catch((err) => {
+          if (messageIntervalRef.current) clearInterval(messageIntervalRef.current);
+          setIsLoading(false);
+          setToastMessage('⚠️ Could not reach the server. Check your connection.');
+          console.error('Generation error:', err);
+        });
+
     } else {
       if (messageIntervalRef.current) clearInterval(messageIntervalRef.current);
       if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
@@ -312,16 +398,50 @@ export default function SoloMode({ onBack, onOpenHall }) {
     setIsLoading(true);
   };
 
-  const handleSaveToHall = () => {
+  const handleSaveToHall = async () => {
     if (!generatedResult) return;
+
+    const token = localStorage.getItem('ithenthina_token');
+
+    if (!token) {
+      setToastMessage('⚠️ Please log in to save inventions to the Hall!');
+      return;
+    }
+
     try {
-      const existing = JSON.parse(localStorage.getItem("ithenthina_hall_of_uselessness") || "[]");
-      const updated = [generatedResult, ...existing.filter((item) => item.id !== generatedResult.id)];
-      localStorage.setItem("ithenthina_hall_of_uselessness", JSON.stringify(updated));
-      setToastMessage("Successfully archived in the Hall of Uselessness 🏛");
+      const res = await fetch(`${API_BASE}/api/inventions/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          selectedItems: generatedResult.selectedItems,
+          invention: generatedResult._rawInvention || {
+            name: generatedResult.name,
+            idea: generatedResult.description,
+            problemSolved: generatedResult.problemSolves,
+            price: generatedResult.details?.price,
+            marketDemand: generatedResult.details?.demand,
+            complexity: generatedResult.details?.complexity,
+            environment: generatedResult.details?.environment,
+            scores: generatedResult.scores,
+            roast: generatedResult.roast,
+          },
+          imageUrl: generatedResult.imageUrl || null,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setToastMessage('Successfully saved to Hall of Uselessness 🏛️');
+      } else {
+        setToastMessage('⚠️ Save failed: ' + (data.message || 'Unknown error'));
+      }
     } catch (err) {
-      console.error("Failed to save to localStorage:", err);
-      setToastMessage("Archived in memory (Storage unavailable)");
+      console.error('Save error:', err);
+      setToastMessage('⚠️ Could not save. Check your connection.');
     }
   };
 
@@ -1367,7 +1487,7 @@ export default function SoloMode({ onBack, onOpenHall }) {
                   }}
                 >
                   <div style={{ fontSize: 12, fontWeight: 700, color: "#666" }}>💸 Estimated Price</div>
-                  <div style={{ fontFamily: "'Bungee', cursive", fontSize: 18, color: COLORS.ink, marginTop: 4 }}>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: COLORS.ink, marginTop: 4 }}>
                     {generatedResult.details.price}
                   </div>
                 </div>
@@ -1382,7 +1502,7 @@ export default function SoloMode({ onBack, onOpenHall }) {
                   }}
                 >
                   <div style={{ fontSize: 12, fontWeight: 700, color: "#666" }}>📉 Market Demand</div>
-                  <div style={{ fontFamily: "'Bungee', cursive", fontSize: 18, color: COLORS.coral, marginTop: 4 }}>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: COLORS.coral, marginTop: 4 }}>
                     {generatedResult.details.demand}
                   </div>
                 </div>

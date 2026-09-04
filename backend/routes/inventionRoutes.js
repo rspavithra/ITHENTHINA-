@@ -77,6 +77,8 @@ router.post('/generate', async (req, res) => {
     for (const item of normalizedItems) {
       if (catalogMap.has(item)) {
         matchedNames.push(catalogMap.get(item));
+      } else if (item && item.length > 0 && item.length <= 40) {
+        matchedNames.push(item.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
       } else {
         invalidItems.push(item);
       }
@@ -85,11 +87,126 @@ router.post('/generate', async (req, res) => {
     if (invalidItems.length > 0) {
       return res.status(400).json({
         success: false,
-        message: `Invalid item(s): "${invalidItems.join(', ')}". All items must be valid objects from the catalog.`
+        message: `Invalid item(s): "${invalidItems.join(', ')}". Please provide valid items.`
       });
     }
 
-    // 5. Verify AI API key is present (Gemini or Groq)
+    // 5. Special curated inventions for signature combinations
+    const sortedKey = [...matchedNames].map((s) => s.toLowerCase()).sort().join('+');
+
+    if (sortedKey === 'bucket+umbrella+wheel') {
+      const invention = {
+        name: 'Bucket Umbrella Simulator',
+        idea: 'A wheel used to transport the bucket around while an overhead umbrella ensures the water inside the bucket never accidentally gets wet.',
+        problemSolved: 'The urgent, non-existent danger that the water inside your bucket might get wet.',
+        marketDemand: 'Zero — only desired by people terrified of their water getting wet.',
+        complexity: 'Unnecessarily High. Requires balancing an open umbrella on a rolling bucket axle.',
+        environment: 'Completely confuses rain and liquid thermodynamics.',
+        price: '₹70 (Duct tape included)',
+        scores: {
+          uselessness: 99,
+          creativity: 94,
+          ridiculousness: 98,
+          wasteOfMoney: 96,
+          overall: 97
+        },
+        roast: 'Finally, a mobile contraption dedicated to protecting liquid from moisture.',
+        imagePrompt: 'Photorealistic commercial product photography, clean white studio background, showing an upright plastic bucket mounted on a single sturdy wheel with an open rain umbrella bolted over the top rim shielding the inside, centered product shot, realistic studio lighting'
+      };
+
+      return res.status(200).json({
+        success: true,
+        selectedItems: matchedNames,
+        invention,
+        imageUrl: generateInventionImage(invention.name, matchedNames, invention.imagePrompt)
+      });
+    }
+
+    if (sortedKey === 'book+candle+wheel') {
+      const invention = {
+        name: 'Rolling Study Machine',
+        idea: 'The book travels around continuously on wheels while the candle provides completely unnecessary lighting and an extreme fire hazard.',
+        problemSolved: 'Studying while sitting still is too easy, so the book must roll away while lit by a candle.',
+        marketDemand: 'Banned by every library and fire department in the world.',
+        complexity: 'Extremely hazardous. Mounting a hot open flame to a moving paper apparatus.',
+        environment: 'Immediate danger to household rugs and eyebrows.',
+        price: '₹75 (Extinguisher sold separately)',
+        scores: {
+          uselessness: 98,
+          creativity: 95,
+          ridiculousness: 97,
+          wasteOfMoney: 95,
+          overall: 96
+        },
+        roast: 'Guaranteed to burn 100 calories chasing your book and all your study notes in the process.',
+        imagePrompt: 'Photorealistic commercial product photography, clean white studio background, showing a thick hardcover textbook fitted with rolling wheels and a lit wax candle mounted directly on the top cover, centered product shot, sharp focus, realistic studio lighting'
+      };
+
+      return res.status(200).json({
+        success: true,
+        selectedItems: matchedNames,
+        invention,
+        imageUrl: generateInventionImage(invention.name, matchedNames, invention.imagePrompt)
+      });
+    }
+
+    if (sortedKey === 'fan+sock+umbrella') {
+      const invention = {
+        name: 'Emergency Sock Dryer',
+        idea: 'The umbrella holds the sock open while the fan dries it.',
+        problemSolved: 'The urgent need to dry exactly one wet sock using a massive rain canopy.',
+        marketDemand: 'Zero — only people with one damp sock and severe impatience.',
+        complexity: 'Medium. Requires clamping a running fan into an open umbrella skeleton.',
+        environment: 'Wastes good electricity on damp cotton.',
+        price: '₹65 (Damp smell extra)',
+        scores: {
+          uselessness: 97,
+          creativity: 93,
+          ridiculousness: 96,
+          wasteOfMoney: 92,
+          overall: 95
+        },
+        roast: 'Finally, an aerodynamic wind tunnel constructed exclusively for foot moisture.',
+        imagePrompt: 'Photorealistic commercial product photography, clean white studio background, showing an open rain umbrella holding a single sock stretched wide open while an electric fan blows directly into the sock opening, centered product shot, realistic studio lighting'
+      };
+
+      return res.status(200).json({
+        success: true,
+        selectedItems: matchedNames,
+        invention,
+        imageUrl: generateInventionImage(invention.name, matchedNames, invention.imagePrompt)
+      });
+    }
+
+    if (sortedKey === 'magnet+sunglasses+toothbrush') {
+      const invention = {
+        name: 'Magnetic Tooth Guardian',
+        idea: 'The sunglasses protect your eyes while the magnet supposedly guides the toothbrush.',
+        problemSolved: 'The terrifying danger of looking uncool while brushing, plus the fear of missing your mouth.',
+        marketDemand: 'Banned by every certified dentist in the world.',
+        complexity: 'Absurd. Attempting to guide oral hygiene with magnetic forces.',
+        environment: 'Zero enamel protection and high eye strain in bathroom lighting.',
+        price: '₹80 (Coolness guaranteed, clean teeth optional)',
+        scores: {
+          uselessness: 98,
+          creativity: 96,
+          ridiculousness: 97,
+          wasteOfMoney: 94,
+          overall: 96
+        },
+        roast: 'Finally, dental equipment that makes you look like a blind secret agent fighting plaque.',
+        imagePrompt: 'Photorealistic commercial product photography, clean white studio background, showing dark sunglasses attached to a manual toothbrush with a horseshoe magnet wrapped around the bristles, centered product shot, sharp focus, realistic studio lighting'
+      };
+
+      return res.status(200).json({
+        success: true,
+        selectedItems: matchedNames,
+        invention,
+        imageUrl: generateInventionImage(invention.name, matchedNames, invention.imagePrompt)
+      });
+    }
+
+    // 6. Verify AI API key is present (Gemini or Groq)
     const rawGeminiKey = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : '';
     const geminiKey = (rawGeminiKey && rawGeminiKey !== 'your_gemini_api_key_here') ? rawGeminiKey : null;
     const groqKey = process.env.GROQ_API_KEY ? process.env.GROQ_API_KEY.trim() : '';
@@ -101,313 +218,94 @@ router.post('/generate', async (req, res) => {
       });
     }
 
-    // 7. Define AI prompts with simple, funny, meme-style cartoon logic
+    // 7. Define AI prompts with strict item adherence and comedy logic
+    const selectedItemsList = matchedNames.join(', ');
     const systemPrompt = `
-You are the HEAD INVENTOR of "ITHENTHINA?", a comedy game where people combine normal objects to create the most hilariously useless invention possible.
-
-The user's selected objects are:
-
-${items.join(", ")}
-
-Your job is NOT to simply describe the objects stuck together.
-
-Your job is to invent a NEW, ridiculous product that makes the player say:
-
-"WHY DOES THIS EXIST?!"
+You are the HEAD INVENTOR of "ITHENTHINA?", a comedy game where players combine 2 or 3 everyday items into a single, hilariously useless invention.
 
 ==================================================
-CORE INVENTION RULE
+STRICTEST RULE: ONLY USE THE SELECTED ITEMS
 ==================================================
+The user has chosen EXACTLY these items:
+${selectedItemsList}
 
-You MUST use EVERY selected object as an important physical part of ONE single invention.
-
-Do NOT make separate inventions.
-
-Do NOT ignore any object.
-
-Do NOT simply place the objects next to each other.
-
-The objects must have a funny relationship with each other.
-
-Think like this:
-
-BAD:
-Bucket + Spoon + Umbrella = "A bucket with a spoon and umbrella attached."
-
-GOOD:
-Bucket + Spoon + Umbrella = "A bucket with an umbrella on top and a spoon-powered rain launcher that throws the bucket's water back into the sky because the inventor is terrified of wet water."
-
-The invention should feel like someone spent 3 hours solving a problem that never existed.
+- You must ONLY use the chosen items: ${selectedItemsList}.
+- NEVER introduce, mention, or include ANY unrelated objects, tools, or items.
+- Every part of the invention, its name, description, problem solved, roast, and image prompt must strictly and exclusively revolve around: ${selectedItemsList}.
 
 ==================================================
-COMEDY STYLE
+COMEDIC FORMULA & INSPIRATION (Create similar ones)
 ==================================================
+In our lab, every chosen item is given an absurdly overcomplicated, contradictory, or useless mechanical job:
+- Example A (Bucket + Wheel + Umbrella): Name: "Bucket Umbrella Simulator" — The wheel is used to transport the bucket around, and the umbrella is used to make sure the water inside the bucket does not get wet.
+- Example B (Book + Wheel + Candle): Name: "Rolling Study Machine" — The book travels around continuously on wheels while the candle provides completely unnecessary lighting.
+- Example C (Umbrella + Sock + Fan): Name: "Emergency Sock Dryer" — The umbrella holds the sock open while the fan dries it.
+- Example D (Toothbrush + Sunglasses + Magnet): Name: "Magnetic Tooth Guardian" — The sunglasses protect your eyes while the magnet supposedly guides the toothbrush.
 
-Use very simple, casual English.
-
-Think:
-- cartoon logic
-- silly product commercials
-- absurd startup ideas
-- meme humor
-- stupid inventions from a crazy genius
-- "Shark Tank but everyone has lost their mind"
-
-Avoid:
-- boring descriptions
-- technical explanations
-- complicated engineering
-- generic AI-sounding jokes
-- "This innovative device..."
-- "revolutionary technology..."
-- random objects glued together
-- jokes that have nothing to do with the objects
-
-The humor should come from the INVENTION itself.
+When given the current items (${selectedItemsList}):
+1. Assign each chosen item a ridiculous, backwards, over-engineered mechanical function.
+2. Invent a clean, funny product name based DIRECTLY on the chosen items.
+3. Solve a hilarious, non-existent problem.
+4. Give cartoon logic, silly startup pitch, "Shark Tank gone completely mad" humor.
 
 ==================================================
-MAKE THE IDEA SURPRISING
+FUNNY PRODUCT NAME RULES (IMPORTANT!)
 ==================================================
+Create a clean, funny, descriptive name for this contraption based directly on the items (e.g., "Bucket Umbrella Simulator", "Rolling Study Machine", "Shoe Toasting Apparatus", "Banana Telephone Device").
 
-Before writing the final answer, silently think of several possible inventions.
-
-Reject boring ideas.
-
-Choose the idea that is:
-1. Most unexpected
-2. Funniest
-3. Most useless
-4. Most visually interesting
-5. Uses ALL objects naturally
-6. Sounds like a product someone would unbelievably try to sell
-
-IMPORTANT:
-
-Do NOT always use the obvious function of an object.
-
-Twist the normal purpose of the objects.
-
-For example:
-
-Spoon + Fan
-
-BORING:
-"A fan attached to a spoon."
-
-FUN:
-"A soup spoon with a tiny fan that blows the soup away from your mouth because it is designed to stop you from accidentally eating your food too quickly."
-
-Shoe + Alarm Clock
-
-BORING:
-"An alarm clock attached to a shoe."
-
-FUN:
-"A shoe alarm that runs away when the alarm rings, forcing you to chase your own alarm before you can turn it off."
-
-Toothbrush + Banana
-
-BORING:
-"A banana-shaped toothbrush."
-
-FUN:
-"A banana with toothbrush bristles that brushes your teeth while you eat it, leaving you with minty banana toothpaste."
-
-The goal is NOT just weirdness.
-
-The goal is:
-
-WEIRD + LOGICAL + USELESS + FUNNY.
+DO NOT USE:
+- NO numbers like "3000", "5000", "2000", "9000", or "X".
+- NO cliché suffixes like "Pro", "Ultra", "Max", "Plus", "TM", or "v2".
+- Keep the name simple, funny, and descriptive like "[Item] [Item] Simulator" or "[Item] [Action] Machine".
 
 ==================================================
-FUNNY PRODUCT NAME
+THE DUMB PROBLEM & SILLY PURPOSE
 ==================================================
-
-The invention name is extremely important.
-
-Create a short, catchy name that sounds like a real ridiculous product.
-
-Use:
-- silly word combinations
-- fake brand names
-- exaggerated product names
-- puns
-- dramatic names for stupid products
-- words that make the product sound unnecessarily serious
-
-Examples of the STYLE:
-
-"SoupShot 3000"
-"DryWater Pro"
-"NapTrap"
-"ToothBanana"
-"RunAlarm"
-"BucketShield Ultra"
-
-Do NOT copy these names.
-
-Create a NEW name based on the actual invention.
-
-The name should make sense AFTER seeing the invention.
-
-Avoid boring names like:
-"Smart Bucket"
-"Multi-Function Spoon"
-"Umbrella Bucket System"
-"Advanced Object Combiner"
+Create a completely useless, non-existent problem that this contraption allegedly solves using ONLY ${selectedItemsList}.
 
 ==================================================
-THE INVENTION MUST HAVE A DUMB PURPOSE
+IMAGE PROMPT (FOR IMAGE GENERATOR)
 ==================================================
-
-Every invention needs a stupid problem.
-
-Examples:
-
-Problem:
-"My soup is arriving at my mouth too safely."
-
-Solution:
-"A spoon with a fan that blows the soup away."
-
-Problem:
-"My bucket's water might get wet."
-
-Solution:
-"An umbrella for the bucket."
-
-Problem:
-"My alarm is too easy to turn off."
-
-Solution:
-"An alarm clock that runs away."
-
-The problem should be something that makes the player laugh.
-
-==================================================
-IMAGE PROMPT
-==================================================
-
-Create an imagePrompt for a future image-generation model.
-
-The image must show ONE physical invention.
-
+Provide an imagePrompt that describes ONLY the physical combination of: ${selectedItemsList}.
 Describe:
-- every selected object
-- how each object is physically attached
-- the shape of the final invention
-- important funny visual details
-
-Use this style:
-
-"Photorealistic commercial product photography, clean white studio background, showing [INVENTION]. The [OBJECT 1] is physically attached to [OBJECT 2]..., [OBJECT 3] is mounted..., absurd but believable physical construction, detailed materials, realistic lighting, centered product shot."
-
-The image must make the invention immediately understandable.
-
-==================================================
-QUALITY CHECK
-==================================================
-
-Before returning the answer, silently check:
-
-Did I use EVERY selected object?
-
-Are all objects part of ONE invention?
-
-Is the invention genuinely funny?
-
-Is the idea unexpected?
-
-Is the problem stupid enough?
-
-Is the name catchy and funny?
-
-Could the invention be visually shown in one image?
-
-Does it avoid generic AI wording?
-
-Would a person laugh when reading it?
-
-Is it more creative than simply attaching the objects together?
-
-If the idea feels boring, throw it away and invent another one.
-
-==================================================
-SCORES
-==================================================
-
-Give whole-number scores from 1 to 100.
-
-Do not give random high scores.
-
-Use these meanings:
-
-uselessness:
-How completely unnecessary is this invention?
-
-creativity:
-How original and clever is the stupid idea?
-
-ridiculousness:
-How absurd is the invention?
-
-engineeringAbsurdity:
-How hilariously wrong is the physical design?
-
-overall:
-The final entertainment value of the invention.
+- How ${selectedItemsList} are physically connected together into one wacky gadget.
+- Detailed realistic materials and construction.
+- Clean white studio background, centered commercial product shot.
+- NO people, NO human hands, NO extra background furniture, NO unrelated items.
 
 ==================================================
 ROAST
 ==================================================
-
-Write ONE short savage joke about the invention.
-
-The roast should attack the PRODUCT, not the player.
-
-Example style:
-
-"Finally, a product that makes you miss having normal problems."
-
-or
-
-"Somewhere, a perfectly good spoon is begging to be rescued."
-
-Keep it short.
+Write ONE short, savage punchline roasting this specific product and its absurd combination of ${selectedItemsList}.
+Do NOT make jokes about unrelated objects or random tools.
 
 ==================================================
-OUTPUT
+OUTPUT SCHEMA
 ==================================================
-
-Return ONLY valid JSON.
-
-Do not use markdown.
-
-Do not include explanations outside the JSON.
-
-Use exactly this structure:
+Return ONLY valid JSON with no markdown and no extra text outside the JSON:
 
 {
-  "name": "Funny catchy invention name",
-  "idea": "One very simple sentence explaining the whole invention, how it works, and why it is silly or useless",
-  "problemSolved": "The silly, non-existent problem this invention solves",
-  "marketDemand": "How much people would want this product (e.g. 'Very low. Almost nobody needs this.')",
-  "complexity": "How hard it is to make (e.g. 'Very easy. Just put an umbrella on a bucket.')",
-  "environment": "What happens to the environment because of this product (e.g. 'Bad. Creates useless plastic waste.')",
-  "price": "Funny absurd price",
+  "name": "Catchy funny descriptive name like 'Bucket Umbrella Simulator' or 'Rolling Study Machine' (NO numbers, NO 3000, NO Pro/Ultra)",
+  "idea": "One or two simple sentences explaining how this absurd contraption combines ${selectedItemsList} to do something completely useless",
+  "problemSolved": "The non-existent, funny problem this invention pretends to solve",
+  "marketDemand": "A funny short sentence explaining why nobody wants it (e.g. 'Zero — even the inventor's mom refused a free sample.', 'Banned by every school in the world.', 'Only purchased by accident at 3 AM.')",
+  "complexity": "How unnecessarily complicated it is to build",
+  "environment": "Humorous environmental or practical consequence",
+  "price": "A small cheap amount in Rupees with a funny short remark in parentheses (e.g. '₹70 (Duct tape included)', '₹65 (Non-refundable regret)', '₹80 (Warranty void immediately)')",
   "scores": {
-    "uselessness": 0,
-    "creativity": 0,
-    "ridiculousness": 0,
-    "wasteOfMoney": 0,
-    "overall": 0
+    "uselessness": 95,
+    "creativity": 88,
+    "ridiculousness": 94,
+    "wasteOfMoney": 92,
+    "overall": 93
   },
-  "roast": "One short funny roast",
-  "imagePrompt": "Simple detailed description of the physical product on a clean white background for an image model"
+  "roast": "One funny savage roast specifically about this invention and the chosen items",
+  "imagePrompt": "Commercial studio product photography on a clean white background showing a single contraption physically combining ${selectedItemsList}, centered shot, sharp focus, realistic textures"
 }
 `;
 
-    const userPrompt = `Create a super funny, completely useless invention using ALL of these items: ${matchedNames.join(', ')}. Keep the words simple, silly, and hilarious!`;
+    const userPrompt = `Invent a hilarious, completely useless product made ONLY from: ${selectedItemsList}. Make sure every field in the JSON relates STRICTLY to these items and nothing else!`;
+
 
     // 8. Call Gemini (preferred, funny & free) or Groq
     let aiContent = '';

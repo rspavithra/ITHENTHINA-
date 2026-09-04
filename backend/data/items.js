@@ -11,7 +11,14 @@ const items = [
   { id: 10, name: "Shoe", icon: "👟" },
   { id: 11, name: "Candle", icon: "🕯️" },
   { id: 12, name: "Wheel", icon: "🛞" },
-  { id: 13, name: "Book", icon: "📖" }
+  { id: 13, name: "Book", icon: "📖" },
+  { id: 14, name: "Teddy Bear", icon: "🧸" },
+  { id: 15, name: "Battery", icon: "🔋" },
+  { id: 16, name: "Magnet", icon: "🧲" },
+  { id: 17, name: "Rope", icon: "🪢" },
+  { id: 18, name: "Phone", icon: "📱" },
+  { id: 19, name: "Fan", icon: "🪭" },
+  { id: 20, name: "Sunglasses", icon: "🕶️" }
 ];
 
 module.exports = items;

@@ -12,8 +12,12 @@ const COLORS = {
   darkGray: "#4b443c",
 };
 
+const API_BASE = 'http://localhost:5000';
+
 export default function HallPage({ onBack }) {
   const [inventions, setInventions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [profileOpen, setProfileOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -27,15 +31,33 @@ export default function HallPage({ onBack }) {
   const userName = currentUser?.name || "Inventor";
 
   useEffect(() => {
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem("ithenthina_hall_of_uselessness") || "[]"
-      );
-      setInventions(saved);
-    } catch (err) {
-      console.error("Error reading Hall:", err);
-      setInventions([]);
-    }
+    // Fetch from backend Hall of Uselessness API
+    setLoading(true);
+    setFetchError('');
+    fetch(`${API_BASE}/api/inventions`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.inventions)) {
+          // Map backend shape to what the cards expect
+          const mapped = data.inventions.map((item) => ({
+            id: item._id,
+            name: item.name,
+            description: item.idea || item.description || '',
+            roast: item.roast || '',
+            icons: [],  // Backend does not have icons; kept for compat
+            scores: item.scores || {},
+            selectedItems: item.selectedItems || [],
+            imageUrl: item.image || null,
+            creator: item.creator || 'Anonymous',
+            createdAt: item.createdAt,
+          }));
+          setInventions(mapped);
+        } else {
+          setFetchError(data.message || 'Could not load inventions.');
+        }
+      })
+      .catch(() => setFetchError('Could not reach server. Check your connection.'))
+      .finally(() => setLoading(false));
 
     // Close profile dropdown on outside click
     const handler = (e) => {
@@ -46,14 +68,8 @@ export default function HallPage({ onBack }) {
   }, []);
 
   const handleClear = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete all archived useless inventions?"
-      )
-    ) {
-      localStorage.removeItem("ithenthina_hall_of_uselessness");
-      setInventions([]);
-    }
+    // No-op: Hall is now managed by the backend
+    alert('Inventions are stored in the cloud and cannot be bulk-deleted from here.');
   };
 
   const handleLogout = () => {
@@ -307,7 +323,46 @@ export default function HallPage({ onBack }) {
           padding: "0 20px",
         }}
       >
-        {inventions.length === 0 ? (
+        {loading ? (
+          <div
+            style={{
+              background: COLORS.white,
+              border: `4px solid ${COLORS.ink}`,
+              borderRadius: 24,
+              padding: "60px 32px",
+              textAlign: "center",
+              boxShadow: `8px 8px 0 ${COLORS.ink}`,
+            }}
+          >
+            <div style={{ fontSize: 48, marginBottom: 14 }}>⏳</div>
+            <div
+              style={{
+                fontFamily: "'Bungee', cursive",
+                fontSize: 20,
+                marginBottom: 10,
+              }}
+            >
+              LOADING THE ARCHIVE...
+            </div>
+          </div>
+        ) : fetchError ? (
+          <div
+            style={{
+              background: "#FEE2E2",
+              border: `3px solid ${COLORS.coral}`,
+              borderRadius: 20,
+              padding: "40px 32px",
+              textAlign: "center",
+              boxShadow: `6px 6px 0 ${COLORS.ink}`,
+            }}
+          >
+            <div style={{ fontSize: 48, marginBottom: 14 }}>⚠️</div>
+            <div style={{ fontFamily: "'Bungee', cursive", fontSize: 20, marginBottom: 10 }}>
+              FAILED TO LOAD
+            </div>
+            <p style={{ color: COLORS.coral, fontWeight: 600, fontSize: 14 }}>{fetchError}</p>
+          </div>
+        ) : inventions.length === 0 ? (
           <div
             style={{
               background: COLORS.white,
